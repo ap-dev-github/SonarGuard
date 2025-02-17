@@ -1,0 +1,14 @@
+*{
+    margin: 0px;
+    padding: 0px;
+  
+}
+
+@media (max-width: 768px) {
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center; /* Optional: Center items */
+        align-items: center; /* Optional: Align items */
+    }
+}

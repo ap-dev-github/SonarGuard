@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonarGuard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   
+<script type="text/javascript">
+(function(){
+  emailjs.init({
+    publicKey: "sPBDXybNLbhrPzLXH",
+  });
+})();
+</script>
+<script src="script.js"></script>
+</head>
+<body style="background: url('./images/background3.png'); background-size: cover;">
+    <section class="navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="width:100vw;display: flex; align-items: center; justify-content: center;">
+          <a class="navbar-brand" href="#">SonarGuard!</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+      
+          <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav mr-auto">
+                  <li class="nav-item active">
+                      <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+                  </li>
+              </ul>
+      
+              <!-- Add Members Button -->
+              <button class="btn btn-light my-2 my-lg-0" onclick="location.href='./members.html'">Add Members</button>
+          </div>
+      </nav>
+       </section>
+    <div class="container" style="width:100vw;display: flex; align-items: center; justify-content: center;margin-top:60px;">
+        <div class="card" style="width: 50%; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <h3 class="text-center">SonarGuard - Add Members</h3>
+            <form id="alertForm" onsubmit="event.preventDefault(); sendEmail();">
+                <div class="form-group">
+                    <label for="emailInput1">First Member:</label>
+                    <input type="email" class="form-control" id="emailInput1" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailInput2">Second Member:</label>
+                    <input type="email" class="form-control" id="emailInput2" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailInput3">Third Member:</label>
+                    <input type="email" class="form-control" id="emailInput3" placeholder="Enter email" required>
+                </div>
+                <button type="submit" onclick="sendEmail()" class="btn btn-primary btn-block">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
