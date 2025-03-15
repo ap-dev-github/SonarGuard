@@ -1,103 +1,158 @@
-import Image from "next/image";
+"use client"
+import React, { Key, useState } from "react";
+import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
+import {userPool} from "@/utils/cognitoConfig";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+export default function Login(){
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
+    const [otp, setOtp] = useState("");
+    const [isForgetPassword, setIsForgetPassword] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const getCognitoUser = () => new CognitoUser({Username: email, Pool: userPool});
+
+    //forget password function 
+    const handleForgetPassword = () => {
+        if(!email) {
+            setMessage("Please enter your email first.");
+            return;
+        }
+        const user = getCognitoUser();
+        user.forgotPassword({
+            onSuccess: (data) => {
+                console.log("OTP sent:", data);
+                setMessage("OTP sent! Check your email.");
+                setIsVerifying(true); 
+            },
+            onFailure: (err) => {
+                console.log("Forgot Password Error:", err.message);
+                setMessage(err.message);
+            },
+
+        });
+    };
+
+    const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if(!email || !otp || !newPassword) {
+            setMessage("Please fill all fields.");
+            return;
+        }
+        const user = getCognitoUser();
+    user.confirmPassword(otp, newPassword, {
+        onSuccess: () =>{
+            console.log("Password reset Successful!");
+            setMessage("Password reset successful! You can now log in. ");
+            setIsForgetPassword(false);
+            setIsVerifying(true);
+
+        },
+        onFailure: (err) => {
+         console.error("Reset Password Error:", err.message);
+         setMessage(err.message);
+        },
+    });
+
+    };
+    const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        //Authentication Details 
+        const authDetails = new AuthenticationDetails({
+        Username: email,
+        Password: password,
+        });
+
+        //Cognito User 
+        const user = getCognitoUser();
+
+        //Sign in the user 
+        user.authenticateUser(authDetails, {
+            onSuccess: (session) => {
+            console.log("Login Successful:", session);
+            setMessage("Login successful!");
+            localStorage.setItem("token", session.getIdToken().getJwtToken());
+            },
+            onFailure: (err) => {
+                console.error("Login failed:", err);
+                setMessage(err.message || "Login failed. Please try again.");
+              },
+        });
+    
+    };
+    return(
+        <div className=" min-h-screen flex justify-center items-center rounded-sm shadow-sm">
+            <form  onSubmit={isForgetPassword ? handleResetPassword : handleLogin} className="bg-white p-8 rounded-lg shadow-lg w-96">
+             <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                {isForgetPassword ? "Reset Password" : "Login"}
+                </h2>
+
+             {/* Email*/}
+             <label className="block text-grey-700">Email</label>
+             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} 
+             placeholder="Enter your email" className="w-full px-4 py-2 border rounded-md 
+             focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4" required/>
+
+             {/*Conditional Redenring: Login vd Forgot Password*/}
+             {!isForgetPassword ?
+             (
+                <>
+                   {/*Password*/}
+             <label className="block text-grey-700">Password</label>
+             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} 
+             placeholder="Enter your password" className="w-full px-4 py-2 border 
+             rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4" required />
+               </>  
+             ):(
+                <>
+                {/*OTP Input*/}
+                {isVerifying && (
+                   <>
+                   <label className="block text-gray-700">Enter OTP</label> 
+                   <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)}
+                   placeholder="Enter OTP sent on your email"
+                   className="w-full px-4 py-2 border rounded-md focus:ring-1
+                    focus:ring-blue-500 focus:outline-none mb-4"
+                    />
+                </>
+                )}
+                { /* New Password Input*/}
+                <label className="block text-grey-700">New Password</label>
+                <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Enter new password"
+                            className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
+                            required
+                        />
+                </>
+             )} 
+             {/*Display Message*/}
+             {message && <p className="text-red-500">{message}</p>}
+            
+            {/*Submit Button*/}
+             <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 
+             my-4">{isForgetPassword ? "Reset Password" : "Login"}</button>
+
+             {/*Forget Password and Signup Links */}
+             <div className="mt-4 flex justify-between text-sm text-gray-600">
+                {!isForgetPassword ? (
+                    <a href="#" onClick={() => setIsForgetPassword(true)}   className=" text-black hover:underline">Forget Password?</a>
+                ):(
+                    <a href="#" className="text-black hover:underline" onClick={() => setIsForgetPassword(false)}>
+                        Back to Login
+                    </a>
+                )}
+                <div className="flex justify-between text-sm text-gray-600">
+                <p className="text-black ">Don't have account?</p>
+                <a href="/auth/signup" className="text-blue-500 hover:underline">Signup</a>
+                </div>
+             </div>
+            </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+    );
+};
