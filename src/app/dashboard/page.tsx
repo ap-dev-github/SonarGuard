@@ -23,8 +23,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("token details:", token);
-
+   
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
@@ -56,7 +55,6 @@ export default function Dashboard() {
     <div>
       {auth ? (
         <>
-           <h1>Welcome to the dashboard</h1>
           {alert && <AlertMessage message={alert.message} type={alert.type} />}
         </>
       ) : (

@@ -97,7 +97,9 @@ export default function Login(){
             console.log("Login Successful:", session);
             showAlert("Login Successful:","success");
             localStorage.setItem("token", session.getIdToken().getJwtToken());
+            window.dispatchEvent(new Event("storage"));  //notify the storage evenchage
             router.push('/dashboard');
+           
             },
             onFailure: (err) => {
                 console.error("Login failed:", err);
@@ -107,7 +109,11 @@ export default function Login(){
     
     };
     return(
-        <div className=" min-h-screen flex justify-center items-center rounded-sm shadow-sm">
+        <div className=" min-h-screen flex justify-center backdrop-blur-2xl items-center rounded-sm shadow-sm"  style={{
+            backgroundImage: "url('/bg-image.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}>
             <form  onSubmit={isForgetPassword ? handleResetPassword : handleLogin} className="bg-white p-8 rounded-lg shadow-lg w-96">
              <h2 className="text-2xl font-bold mb-6 text-gray-800">
                 {isForgetPassword ? "Reset Password" : "Login"}
@@ -164,7 +170,7 @@ export default function Login(){
                
             
             {/*Submit Button*/}
-             <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 
+             <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-all
              my-4">{isForgetPassword ? "Reset Password" : "Login"}</button>
 
              {/*Forget Password and Signup Links */}
@@ -178,7 +184,7 @@ export default function Login(){
                 )}
                 <div className="flex justify-between text-sm text-gray-600">
                 <p className="text-black ">Don't have account?</p>
-                <a href="/auth/signup" className="text-blue-500 hover:underline">Signup</a>
+                <a href="/auth/signup" className="text-blue-500 hover:underline px-1"> Signup</a>
                 </div>
              </div>
             </form>
