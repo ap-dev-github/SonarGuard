@@ -2,61 +2,80 @@
 import React, { Key, useState } from "react";
 import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import {userPool} from "@/utils/cognitoConfig";
+import AlertMessage from "@/components/AlertMessage";
 
 export default function Login(){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
     const [otp, setOtp] = useState("");
     const [isForgetPassword, setIsForgetPassword] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [alert, setAlert] = useState<{ message: string; type: "success" | "error"}|null>(null);
 
     const getCognitoUser = () => new CognitoUser({Username: email, Pool: userPool});
-
-    //forget password function 
-    const handleForgetPassword = () => {
-        if(!email) {
-            setMessage("Please enter your email first.");
-            return;
-        }
-        const user = getCognitoUser();
-        user.forgotPassword({
-            onSuccess: (data) => {
-                console.log("OTP sent:", data);
-                setMessage("OTP sent! Check your email.");
-                setIsVerifying(true); 
-            },
-            onFailure: (err) => {
-                console.log("Forgot Password Error:", err.message);
-                setMessage(err.message);
-            },
-
-        });
-    };
+     
+    //alert function
+    const showAlert = (message: string, type: "success" | "error") => {
+        setAlert({message, type});
+        if(type === "success"){
+        setTimeout(() => {
+           setAlert(null);
+        },3000);}
+    }
 
     const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if(!email || !otp || !newPassword) {
-            setMessage("Please fill all fields.");
+    
+        if (!email || !newPassword || !confirmPassword) {
+            showAlert("Please fill all fields.", "error");
             return;
         }
+    
+        if (newPassword !== confirmPassword) {
+            showAlert("Passwords do not match.", "error");
+            return;
+        }
+    
         const user = getCognitoUser();
-    user.confirmPassword(otp, newPassword, {
-        onSuccess: () =>{
-            console.log("Password reset Successful!");
-            setMessage("Password reset successful! You can now log in. ");
-            setIsForgetPassword(false);
-            setIsVerifying(true);
-
-        },
-        onFailure: (err) => {
-         console.error("Reset Password Error:", err.message);
-         setMessage(err.message);
-        },
-    });
-
+    
+        if (!isVerifying) {
+            // Step 1: Send OTP
+            user.forgotPassword({
+                onSuccess: (data) => {
+                    console.log("OTP sent:", data);
+                    showAlert("OTP sent! Check your email.", "success");
+                    setIsVerifying(true); // Now show the OTP input field
+                },
+                onFailure: (err) => {
+                    console.log("Forgot Password Error:", err.message);
+                    showAlert(err.message, "error");
+                },
+            });
+        } else {
+            // Step 2: Verify OTP and reset password
+            if (!otp) {
+                showAlert("Please enter the OTP.", "error");
+                return;
+            }
+    
+            user.confirmPassword(otp, newPassword, {
+                onSuccess: () => {
+                    console.log("Password reset Successful!");
+                    showAlert("Password reset successful! You can now log in.", "success");
+                    setIsForgetPassword(false);
+                    setIsVerifying(false);
+                    setOtp(""); // Clear OTP field
+                },
+                onFailure: (err) => {
+                    console.error("Reset Password Error:", err.message);
+                    showAlert(err.message, "error");
+                },
+            });
+        }
     };
+    
     const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -73,12 +92,12 @@ export default function Login(){
         user.authenticateUser(authDetails, {
             onSuccess: (session) => {
             console.log("Login Successful:", session);
-            setMessage("Login successful!");
+            showAlert("Login Successful:","success");
             localStorage.setItem("token", session.getIdToken().getJwtToken());
             },
             onFailure: (err) => {
                 console.error("Login failed:", err);
-                setMessage(err.message || "Login failed. Please try again.");
+                showAlert(err.message || "Login failed. Please try again.","error");
               },
         });
     
@@ -129,10 +148,16 @@ export default function Login(){
                             className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
                             required
                         />
+                  {/**confirm Password**/}
+             <label className="block text-grey-700">Confirm Password</label>
+             <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} 
+             placeholder="Re-enter password" className="w-full px-4 py-2 border 
+             rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4" required />         
                 </>
              )} 
-             {/*Display Message*/}
-             {message && <p className="text-red-500">{message}</p>}
+            {/*Display Message*/}
+                {alert && <AlertMessage message={alert.message} type={alert.type}/>}
+               
             
             {/*Submit Button*/}
              <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 
