@@ -3,8 +3,11 @@ import React, { Key, useState } from "react";
 import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import {userPool} from "@/utils/cognitoConfig";
 import AlertMessage from "@/components/AlertMessage";
+import { useRouter } from "next/navigation";
+
 
 export default function Login(){
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [otp, setOtp] = useState("");
@@ -94,6 +97,7 @@ export default function Login(){
             console.log("Login Successful:", session);
             showAlert("Login Successful:","success");
             localStorage.setItem("token", session.getIdToken().getJwtToken());
+            router.push('/dashboard');
             },
             onFailure: (err) => {
                 console.error("Login failed:", err);

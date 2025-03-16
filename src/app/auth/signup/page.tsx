@@ -14,6 +14,7 @@ export default function Signup() {
     const [otp, setOtp] = useState("");
     const [isVerifying, setIsVerifying] = useState(false);
     const [alert, setAlert] = useState<{message: string; type: "success"|"error"}|null>(null);
+    
 
     //show alert function
     const showAlert = (message: string, type: "success" | "error") => {
@@ -126,7 +127,7 @@ export default function Signup() {
             showAlert("Verification successful! You can login in.","success");
             setIsVerifying(false);
         }
-    })  ; 
+    }) ; 
     };
     return (
         <div className="min-h-screen flex justify-center items-center bg-gray-100">
