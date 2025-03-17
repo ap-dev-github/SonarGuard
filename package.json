@@ -13,7 +13,10 @@
     "@next/env": "^15.2.2",
     "amazon-cognito-identity-js": "^6.3.12",
     "aws-sdk": "^2.1692.0",
+    "jose": "^6.0.10",
+    "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
+    "mongodb": "^6.14.2",
     "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
