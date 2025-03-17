@@ -33,7 +33,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white p-5 flex justify-between ">
+    <nav className="bg-blue-600 text-white p-3 flex justify-between ">
       <h1 className="text-2xl">SonarGuard</h1>
       <div className="space-x-4">
         <Link href="/" className="text-xl text-white hover:text-blue-200">Home</Link>
@@ -43,9 +43,12 @@ const NavBar = () => {
           </Link>
         )}
         {isLoggedIn && (
+          <>
+           <Link href="/dashboard" className="text-xl text-white hover:text-blue-200">Dashboard</Link>
           <button onClick={handleSignOut} className="bg-yellow-500 px-4 py-2 text-white rounded-lg hover:bg-yellow-600 transition-all">
             Sign Out
           </button>
+          </>
         )}
       </div>
     </nav>
