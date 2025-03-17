@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AlertMessage from "@/components/AlertMessage";
 import {jwtDecode} from "jwt-decode"; 
- 
+import Members from "@/components/Members"; 
+import RadarReading from "@/components/RadarReading";
 
 export default function Dashboard() {
     const router = useRouter();
@@ -56,12 +57,14 @@ export default function Dashboard() {
       {auth ? (
         <>
           {alert && <AlertMessage message={alert.message} type={alert.type} />}
+          <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 p-4 ">
+         <Members/> 
+          <RadarReading/>      
+          </div>
         </>
       ) : (
         <>
-          <h1>Access Denied!</h1>
           {alert && <AlertMessage message={alert.message} type={alert.type} />}
-          <button onClick={() => router.push("/")}>Login</button>
         </>
       )}
     </div>
