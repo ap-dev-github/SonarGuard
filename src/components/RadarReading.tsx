@@ -33,12 +33,7 @@ const RadarReading = () => {
         <div className="flex flex-col justify-center items-center shadow-2xl rounded-3xl w-1/2 p-4 border-2 border-blue-200">
             <label className="block text-black font-light text-2xl">Radar Reading</label>
             <p className="text-blue-600 text-xl">#</p>
-            <button
-                className="bg-blue-300 text-black rounded shadow-lg hover:bg-blue-500 p-2"
-                onClick={getMembers}
-            >
-                Click Me
-            </button>
+        
         </div>
     );
 };
