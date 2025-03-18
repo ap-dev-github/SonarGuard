@@ -45,7 +45,7 @@ const NavBar = () => {
         {isLoggedIn && (
           <>
            <Link href="/dashboard" className="text-xl text-white hover:text-blue-200">Dashboard</Link>
-          <button onClick={handleSignOut} className="bg-yellow-500 px-4 py-2 text-white rounded-lg hover:bg-yellow-600 transition-all">
+          <button onClick={handleSignOut} className="bg-yellow-500 px-4 py-2 text-white rounded-2xl drop-shadow-lg hover:bg-yellow-600 transition-all">
             Sign Out
           </button>
           </>

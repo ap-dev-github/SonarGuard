@@ -62,24 +62,28 @@ useEffect(() => {
 },[token]);
    
     return (
-<div className="flex  flex-col justify-center items-center shadow-lg rounded w-1/2 padding p-4">
+<div className="flex flex-col justify-center items-center shadow-2xl rounded-3xl w-1/2 padding p-4 border-2 border-blue-200">
     {/*Alert Message*/}
-    {alert && <AlertMessage message={alert.message} type={alert.type}/>}
+    <div className="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg ">
+    {alert && <AlertMessage message={alert.message} type={alert.type}/>} 
+    </div>
      {/*Email Label-Input Section*/}
-    <label htmlFor="email" className="block text-black font-light text-lg">Add New Member</label>
-    <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full flex bg-gray-200 px-2 py-2 m-2 rounded-md focus:ring-2 focus:ring-blue-200 outline-none " placeholder="Enter Email..." />
-    <button onClick={addMember} className="bg-green-500 px-3 py-2 text-white p-3 shadow-md rounded-lg hover:bg-green-600">Add Member</button>
+    <label htmlFor="email" className="block text-black font-sans text-lg">Add New Member</label>
+    <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full flex bg-gray-200 px-2 py-2 mx-2 my-4 rounded-md focus:ring-2 focus:ring-blue-100 outline-none " placeholder="Enter Email..." />
+    <button onClick={addMember} className="bg-green-500 px-3 py-2 text-white p-3 drop-shadow-lg rounded-lg hover:bg-green-600">Add Member</button>
      {/*Display Members*/}
-    <label htmlFor="email" className="block text-black font-light p-4 text-md">Members List</label>
+    <label htmlFor="email" className="block text-black font-bold p-4 text-md">Members List</label>
+    <div className="flex-col items-center font-serif justify-center ">
      <ul>
        {members.length > 0 ? (
         members.map((member, index) => (
-            <li key={index}>{member}</li>
+            <li className="border-2 bg-blue-100 px-4 py-2 drop-shadow-lg rounded-lg m-2" key={index}>{member}</li>
         ))
        ):(
           <p className="">No members added yet.</p>
        )}
      </ul>
+     </div>
     </div>
     );
 };
