@@ -41,7 +41,7 @@ async function verifyToken(token: string ){
 }
 
 //Handle POST Request to the database
-export async function POST(req: NextRequest){
+export async function GET(req: NextRequest){
     try{
       const authHeader = req.headers.get("authorization");
       if(!authHeader) {
@@ -53,24 +53,22 @@ export async function POST(req: NextRequest){
         return NextResponse.json({error: "Invalid Token:"},{ status: 403});
       }
       const ownerEmail = decoded.email;
-      const body = await req.json();
-      const { email : memberEmail } = body;
-      if(!memberEmail || !ownerEmail){
-        return NextResponse.json({ error: "Both memberEmail and the ownerEmail are required"}, {status: 400});
+      if(!ownerEmail){
+        return NextResponse.json({ error: "Owner Email is Missing!"}, {status: 400});
       }
 
      const db = await connectDB();
      const collection = db.collection("members");
-     //added the email to the db in a set to prevent duplication
-     await collection.updateOne(
-        {ownerEmail},
-        {$addToSet:{memberEmails: memberEmail}},
-        {upsert: true}//It means if object exist update otherwise create new 
-     );
-
-     return NextResponse.json({ message: "Member added successfully!"}, {status: 201});
+    
+     //db logic fetch the data 
+     const memberDoc = await collection.findOne({ownerEmail});
+     if (!memberDoc) {
+      return NextResponse.json({ members: []}, {status: 200});
+     }
+     //return the set in memberDoc
+     return NextResponse.json({ members: memberDoc.memberEmails}, {status: 200});
     } catch (error) {
       console.error("Error:", error);
-      return NextResponse.json({error:"Failed to add member"},{status: 500});
+      return NextResponse.json({error:"Failed to Fetch Members"},{status: 500});
     }
 }
