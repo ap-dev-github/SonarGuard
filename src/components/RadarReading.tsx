@@ -1,39 +1,28 @@
+"use client";  
+
 import { useState, useEffect } from "react";
 
 const RadarReading = () => {
-    const [token, setToken] = useState("");
+    const [checkMovement, setCheckMovement] = useState(false);
 
     useEffect(() => {
-        setToken(localStorage.getItem("token") || "");
-    }, []); 
-
-    const getMembers = async () => {
-        if (!token) {
-            console.error("No token found in localStorage");
-            return;
+        if (checkMovement) {
+         //   triggerEmailAlert();
         }
+    }, [checkMovement]);  // Runs when checkMovement changes
 
-        try {
-            const response = await fetch("/api/triggerEmail", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "authorization": `Bearer ${token}`,
-                },
-            });
+    const triggerEmailAlert = async () => {
+    
 
-            const data = await response.json();
-            console.log("Response from the server:", data);
-        } catch (error) {
-            console.error("Error fetching members:", error);
-        }
     };
 
     return (
         <div className="flex flex-col justify-center items-center shadow-2xl rounded-3xl w-1/2 p-4 border-2 border-blue-200">
-            <label className="block text-black font-light text-2xl">Radar Reading</label>
-            <p className="text-blue-600 text-xl">#</p>
-        
+            <label className="block text-black font-light text-3xl">Radar Reading</label>
+            <p className="text-blue-600 text-3xl">{checkMovement ? "1" : "0"}</p>
+            <p className={`text-2xl p-2 rounded-lg ${checkMovement ? "bg-red-200 text-red-600" : "bg-green-100 text-green-400"}`}>
+                {checkMovement ? "Movement Detected!" : "No Movement Detected!"}
+            </p>
         </div>
     );
 };

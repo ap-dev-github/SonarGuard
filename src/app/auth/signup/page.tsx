@@ -5,6 +5,7 @@ import { CognitoUserAttribute, CognitoUser,CognitoUserPool, ISignUpResult } from
 import { userPool } from "../../../utils/cognitoConfig";
 import AlertMessage from '@/components/AlertMessage';
 
+
 export default function Signup() {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
