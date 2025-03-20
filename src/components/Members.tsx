@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import AlertMessage from "./AlertMessage";
+import { useMembers } from "@/contexts/MemberContext";
 
 const Members = () => {
     const [email, setEmail] = useState(""); 
     const [alert, setAlert] = useState<{ message: string; type: "success" | "error"}|null>(null); 
-    const [members, setMembers] = useState([]); 
+    const { members, setMembers } = useMembers();
     const token = localStorage.getItem("token");
 
     

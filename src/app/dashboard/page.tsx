@@ -5,12 +5,12 @@ import AlertMessage from "@/components/AlertMessage";
 import {jwtDecode} from "jwt-decode"; 
 import Members from "@/components/Members"; 
 import RadarReading from "@/components/RadarReading";
+import { MembersProvider } from "@/contexts/MemberContext";
 
 export default function Dashboard() {
     const router = useRouter();
   const [auth, setAuth] = useState(false);
   const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
- 
 
   // Show alert
   const showAlert = (message: string, type: "success" | "error") => {
@@ -58,8 +58,10 @@ export default function Dashboard() {
         <>
           {alert && <AlertMessage message={alert.message} type={alert.type} />}
           <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 p-4 ">
-         <Members/> 
-          <RadarReading/>      
+          <MembersProvider>
+          <Members/> 
+          <RadarReading/>  
+          </MembersProvider>    
           </div>
         </>
       ) : (
