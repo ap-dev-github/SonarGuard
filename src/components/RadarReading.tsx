@@ -6,18 +6,7 @@ import { stringify } from "querystring";
 
 const RadarReading = () => {
     const [checkMovement, setCheckMovement] = useState(false);
-<<<<<<< HEAD
 
-    useEffect(() => {
-        if (checkMovement) {
-         //   triggerEmailAlert();
-        }
-    }, [checkMovement]);  // Runs when checkMovement changes
-
-    const triggerEmailAlert = async () => {
-    
-
-=======
     const {members} =useMembers();
     useEffect(() => {
         if (checkMovement) {
@@ -36,16 +25,13 @@ const RadarReading = () => {
     
         const data = await response.json(); 
         console.log(data);
->>>>>>> dev
+
     };
     
 
     return (
         <div className="flex flex-col justify-center items-center shadow-2xl rounded-3xl w-1/2 p-4 border-2 border-blue-200">
-<<<<<<< HEAD
-=======
             <button onClick={triggerEmailAlert} className="rounded swadow-lg text-white bg-green-500  px-4 py-2 hover:bg-green-600">Email Trigger </button>
->>>>>>> dev
             <label className="block text-black font-light text-3xl">Radar Reading</label>
             <p className="text-blue-600 text-3xl">{checkMovement ? "1" : "0"}</p>
             <p className={`text-2xl p-2 rounded-lg ${checkMovement ? "bg-red-200 text-red-600" : "bg-green-100 text-green-400"}`}>
