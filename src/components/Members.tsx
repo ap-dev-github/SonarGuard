@@ -78,7 +78,7 @@ useEffect(() => {
      <ul>
        {members.length > 0 ? (
         members.map((member, index) => (
-            <li className="border-2 bg-blue-100 px-4 py-2 drop-shadow-lg rounded-lg m-2" key={index}>{member}</li>
+      <li className="flex w-full justify-between items-center break-all px-4 py-2 border-2 bg-blue-100  drop-shadow-lg rounded-lg m-2" key={index}><span>{member}</span><button className="text-white bg-red-100 shadow-lg round-xl hover:bg-red-200">❌</button></li>
         ))
        ):(
           <p className="">No members added yet.</p>
