@@ -56,6 +56,26 @@ const getMembers = async() => {
         showAlert("Error Fetching the members!","error");
     }
 }
+
+//Function to delete a member from the list 
+const deleteMember = async(email:string) => {
+  try {
+    const res = await fetch('/api/deleteMember', {
+      method: "DELETE", 
+      headers : 
+       { "Content-Type": "application/json",},
+       body: JSON.stringify({email})
+    });
+    if (res.ok) {
+      await getMembers();
+      console.log("Member deletion successfuly!")
+      showAlert("Member deleted successfully!", "success");
+    }
+  } catch {
+      console.log("Error deleting the member");
+      showAlert("Error deleting member","error");
+  }
+}
 //Refreshes at page refresh and mount 
 useEffect(() => {
     if(token)
