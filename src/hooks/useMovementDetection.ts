@@ -5,21 +5,23 @@ import { database } from '@/lib/firebase';
 
 export const useMovementDetection = (checkInterval = 15000) => {
   const [movementDetected, setMovementDetected] = useState(false);
+  const [distance, setDistance] = useState(0);
 
   useEffect(() => {
     const distanceRef = ref(database, 'sensorData/distance');
     
     const checkMovement = () => {
       onValue(distanceRef, (snapshot) => {
-        const distance = snapshot.val();
-        setMovementDetected(distance>0);
+        const currentDistance = snapshot.val();
+        setMovementDetected(currentDistance > 0);
+        setDistance(currentDistance);
       });
     };
 
-    //inital checking
+    // Initial check
     checkMovement();
     
-  //periodic check
+    // Periodic check
     const interval = setInterval(checkMovement, checkInterval);
     
     return () => {
@@ -27,5 +29,6 @@ export const useMovementDetection = (checkInterval = 15000) => {
     };
   }, [checkInterval]);
 
-  return movementDetected;
+ 
+  return { movementDetected, distance };
 };
