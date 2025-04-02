@@ -10,11 +10,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "@firebase/database": "^1.0.14",
     "@next/env": "^15.2.2",
     "amazon-cognito-identity-js": "^6.3.12",
     "aws-sdk": "^2.1692.0",
     "emailjs-com": "^3.2.0",
-    "firebase": "^11.4.0",
+    "firebase": "^11.6.0",
     "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",

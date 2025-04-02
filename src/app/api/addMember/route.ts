@@ -4,9 +4,9 @@ import {importJWK, jwtVerify} from "jose";
 
 
 //MongoDB Connection String 
-const MONGO_URI = process.env.NEXT_APP_MONGO_URI??"";
-const DB_NAME = process.env.NEXT_APP_DB_NAME??"";
-const COGNITO_ISSUER = "https://cognito-idp.ap-south-1.amazonaws.com/ap-south-1_NVOTctJBy";
+const MONGO_URI = process.env.MONGO_URI??"";
+const DB_NAME = process.env.DB_NAME??"";
+const COGNITO_ISSUER = process.env.NEXT_PUBLIC_COGNITO_ISSUER??"";
 
 //Function to connect to the mongoDB
 const connectDB = async() => {
@@ -30,8 +30,8 @@ async function verifyToken(token: string ){
     }));
     //Verify token using the public key
     const {payload} = await jwtVerify(token, await importJWK(jwks[0], "RS256"),{
-        issuer:COGNITO_ISSUER,
-        audience: "6qipdfbmr83h8p5oepb9pmq6er", //Client ID Cognito
+        issuer:process.env.COGNITO_ISSUER,
+        audience: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID, //Client ID Cognito
     });
     return payload;
     } catch (error) {

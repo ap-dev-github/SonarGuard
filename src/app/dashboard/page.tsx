@@ -7,6 +7,7 @@ import Members from "@/components/Members";
 import RadarReading from "@/components/RadarReading";
 import { MembersProvider } from "@/contexts/MemberContext";
 
+
 export default function Dashboard() {
     const router = useRouter();
   const [auth, setAuth] = useState(false);
@@ -57,7 +58,7 @@ export default function Dashboard() {
       {auth ? (
         <>
           {alert && <AlertMessage message={alert.message} type={alert.type} />}
-          <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 p-4 ">
+          <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 p-4 gap-40">
           <MembersProvider>
           <Members/> 
           <RadarReading/>  

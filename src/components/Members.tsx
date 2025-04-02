@@ -58,24 +58,43 @@ const getMembers = async() => {
 }
 
 //Function to delete a member from the list 
-const deleteMember = async(email:string) => {
-  try {
-    const res = await fetch('/api/deleteMember', {
-      method: "DELETE", 
-      headers : 
-       { "Content-Type": "application/json",},
-       body: JSON.stringify({email})
+const deleteMember = async(delEmail:string) => {
+  if(!delEmail) return;
+  const response = await fetch("/api/deleteMember",
+    {
+      method: "DELETE",
+      headers: {
+           "Content-Type": "application/json",
+           "authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({delEmail}),
     });
-    if (res.ok) {
-      await getMembers();
-      console.log("Member deletion successfuly!")
-      showAlert("Member deleted successfully!", "success");
-    }
-  } catch {
-      console.log("Error deleting the member");
-      showAlert("Error deleting member","error");
+    const data = await response.json();
+    console.log("Response from server:", data);
+    if(response.ok){
+      setEmail("");
+      await getMembers(); //fetch Updated List
+      showAlert("Member deleted successfully!","success")
+    } else {
+      showAlert("Error deleting member!","error");
+    } 
+  };
+
+
+  //Function to send the emails to the backend 
+  const TriggerEmail = async(emails:string[]) => {
+   const response = await fetch('/api/triggerEmail', {
+    method: "POST",
+    body: JSON.stringify({emails}),
+   });
+   if (response.ok) {
+    console.log("Emails recevied by triggerEmail api");
+   } else {
+    console.log("Error sending mailing list to api.");
+   }
   }
-}
+
+
 //Refreshes at page refresh and mount 
 useEffect(() => {
     if(token)
@@ -83,22 +102,22 @@ useEffect(() => {
 },[token]);
    
     return (
-<div className="flex flex-col justify-center items-center shadow-2xl rounded-3xl w-1/2 padding p-4 border-2 border-blue-200">
+<div className=" flex flex-col justify-center items-center shadow-2xl rounded-3xl padding p-4 border-2 border-blue-200">
     {/*Alert Message*/}
     <div className="fixed top-5 left-1/2 transform -translate-x-1/2 p-3 rounded-lg ">
     {alert && <AlertMessage message={alert.message} type={alert.type}/>} 
     </div>
      {/*Email Label-Input Section*/}
-    <label htmlFor="email" className="block text-black font-sans text-lg">Add New Member</label>
+    <label htmlFor="email" className="block text-black font-sans text-lg">Add Members</label>
     <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full flex bg-gray-200 px-2 py-2 mx-2 my-4 rounded-md focus:ring-2 focus:ring-blue-100 outline-none " placeholder="Enter Email..." />
     <button onClick={addMember} className="bg-green-500 px-3 py-2 text-white p-3 drop-shadow-lg rounded-lg hover:bg-green-600">Add Member</button>
      {/*Display Members*/}
-    <label htmlFor="email" className="block text-black font-bold p-4 text-md">Members List</label>
+    <label htmlFor="email" className="block text-black font-bold p-4 text-md">Members to Receive the Notification</label>
     <div className="flex-col items-center font-serif justify-center ">
      <ul>
        {members.length > 0 ? (
         members.map((member, index) => (
-      <li className="flex w-full justify-between items-center break-all px-4 py-2 border-2 bg-blue-100  drop-shadow-lg rounded-lg m-2" key={index}><span>{member}</span><button className="text-white bg-red-100 shadow-lg round-xl hover:bg-red-200">❌</button></li>
+      <li className="flex w-full justify-between items-center break-all px-4 py-2 border-2 bg-blue-100  drop-shadow-lg rounded-lg m-2" key={index}><span>{member}</span><button onClick={()=>deleteMember(member)} className="text-white bg-red-100 shadow-lg rounded-xl hover:bg-red-200">❌</button></li>
         ))
        ):(
           <p className="">No members added yet.</p>
