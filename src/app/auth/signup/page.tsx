@@ -1,220 +1,259 @@
-"use client"
-import AWS from 'aws-sdk';
-import React, { useEffect, useState } from "react";
-import { CognitoUserAttribute, CognitoUser,CognitoUserPool, ISignUpResult } from "amazon-cognito-identity-js";
-import { userPool } from "../../../utils/cognitoConfig";
+'use client'
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AlertMessage from '@/components/AlertMessage';
 
+export default function SignupForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [alert, setAlert] = useState<{message: string; type: 'success'|'error'}|null>(null);
 
-export default function Signup() {
-    const [email, setEmail] = useState("");
-    const [name, setName] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [message, setMessage] = useState("");
-    const [otp, setOtp] = useState("");
-    const [isVerifying, setIsVerifying] = useState(false);
-    const [alert, setAlert] = useState<{message: string; type: "success"|"error"}|null>(null);
-    
+  const showAlert = (message: string, type: "success" | "error") => {
+    setAlert({message, type});
+    setTimeout(() => setAlert(null), type === "success" ? 3000 : 5000);
+  };
 
-    //show alert function
-    const showAlert = (message: string, type: "success" | "error") => {
-        setAlert({message,type});
-        
-        if(type === "success"){
-            setTimeout(() => {
-               setAlert(null);
-            },3000);}
-    };
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-    // AWS Cognito required attributes
-    const attributes = [
-        new CognitoUserAttribute({ Name: "email", Value: email }),
-        new CognitoUserAttribute({ Name: "name", Value: name }),
-    ];
+    // Basic validation
+    if (password !== confirmPassword) {
+      showAlert("Passwords don't match!", "error");
+      setIsLoading(false);
+      return;
+    }
 
+    if (password.length < 8) {
+      showAlert("Password must be at least 8 characters", "error");
+      setIsLoading(false);
+      return;
+    }
 
-    //check User Verfication function
-    AWS.config.update({
-        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
-        region: process.env.NEXT_PUBLIC_AWS_REGION,
+    try {
+      const response = await fetch('/api/cognito/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name }),
       });
-    const congnito = new AWS.CognitoIdentityServiceProvider({ region:process.env.NEXT_APP_AWS_REGION});
-    async function checkUserEmailVerification(username: string, userPoolId: string) {
-        try {
-            const response = await congnito.adminGetUser({
-               UserPoolId: userPoolId,
-               Username: username 
-            }).promise();
-            const emailVerifiedAttr =response.UserAttributes?.find(attr => attr.Name === "email_verified");
-            return emailVerifiedAttr?.Value === "true";
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-            return null;
-        }
+
+      const data = await response.json();
+
+      if (data.success) {
+        showAlert("Signup successful! Check your email for verification code.", "success");
+        setIsVerifying(true);
+      } else {
+        showAlert(data.message || "Signup failed", "error");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      showAlert("An error occurred during signup", "error");
+    } finally {
+      setIsLoading(false);
     }
-  
+  };
 
-    //get CognitoUser
-    const getCognitoUser = () => new CognitoUser({Username: email, Pool: userPool });
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
+    try {
+      const response = await fetch('/api/cognito/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp }),
+      });
 
-    //handle Signup
-    const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            showAlert("Passwords do not match!","error");
-            return;
-        } 
-        userPool.signUp(email, password, attributes, [], (err, data?: ISignUpResult) => {
-            interface CognitoError extends Error {
-                code?: string;
-            }
-            if (err) {      
-               if ((err as CognitoError).code === "UsernameExistsException") {
-                try{
-                   checkUserEmailVerification(email, process.env.NEXT_APP_COGNITO_USER_POOL_ID as string).then(emailVerified => {
-                    if (emailVerified === null) {
-                        showAlert("Error retrieving user information.","error");
-                    } else if (!emailVerified) {
-                        resendConfirmationCode();
-                        showAlert("User not verified. Verfication code resent!","error");
-                    } else{
-                        showAlert("User already exist. Plese log in.","error");
-                    }
-                   });
-                }
-                catch (error) {
-                    showAlert("An error occurred while processing your request. ","error");
-                }
-               } else {
-                showAlert("An unexpected error occurred.","error");
-                console.log("error occured while user verification signup");
-               } 
-            } else {
-                console.log("Signup Successful:", data);
-                showAlert("Signup successful! Please verify your email.","success");
-                setIsVerifying(true);
-            }
-        });
-    };
+      const data = await response.json();
 
-    //resend otp if user already exist
-    const resendConfirmationCode = () => {
-        const user = getCognitoUser();
-        user.resendConfirmationCode((err, result) => {
-        if(err) {
-            console.log("Error resending code:", err.message);
-            showAlert(err.message,"error");
-        } else {
-            console.log("OTP resent successfully:", result);
-            showAlert("Verification code resent! Check your email.","success");
-            setIsVerifying(true);
-        }
-        });
+      if (data.success) {
+        showAlert("Verification successful! You can now login.", "success");
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        showAlert(data.message || "Verification failed", "error");
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      showAlert("An error occurred during verification", "error");
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    //handle the otp verification
-    const handleVerifyOtp = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const user = getCognitoUser();
-    user.confirmRegistration(otp, true, (err, result) => {
-        if(err) {
-            console.error("Verification Error:", err.message);
-            showAlert(err.message,"error");
-        } else {
-            console.log("Verification Successful:",result);
-            showAlert("Verification successful! You can login in.","success");
-            setIsVerifying(false);
-        }
-    }) ; 
-    };
-    return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-100">
-            {isVerifying ? (
-                <form 
-                className="bg-white p-8 rounded-lg shadow-lg w-96"
-                onSubmit={handleVerifyOtp}
-                >
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Verify OTP</h2>
-                {/*Display Message*/}
-                {alert && <AlertMessage message={alert.message} type={alert.type}/>}
-                {/*OTP Input*/}
-                <label className="block text-gray-700">Enter OTP</label>
-                <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter Verification code"
-                className="w-full px-4 py-2 border rounded-md focusing:ring-1 focus:ring-blue-500 focus:outline-none mb-4" required />
-                {/*verify button */}
-                <button 
-                type="submit"
-                className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 my-4 w-full">
-                Verify OTP
-                </button>
-                </form>
-            ) : ( 
-            <form 
-                className="bg-white p-8 rounded-lg shadow-lg w-96"
-                onSubmit={handleSignup} 
-            >
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Signup</h2>
-                 {/*Display Message*/}
-                 {alert && <AlertMessage message={alert.message} type={alert.type}/>}
+  const handleResendCode = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/cognito/resend', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-                {/* Name */}
-                <label className="block text-gray-700">Name</label>
-                <input
+      const data = await response.json();
+
+      if (data.success) {
+        showAlert("Verification code resent! Check your email.", "success");
+      } else {
+        showAlert(data.message || "Failed to resend code", "error");
+      }
+    } catch (error) {
+      console.error("Resend error:", error);
+      showAlert("Failed to resend verification code", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
+        {isVerifying ? (
+          <>
+            <h2 className="text-2xl font-bold text-center text-gray-900">Verify Email</h2>
+            {alert && <AlertMessage message={alert.message} type={alert.type} />}
+            <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
+              <div className="rounded-md shadow-sm space-y-4">
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                    Verification Code
+                  </label>
+                  <input
+                    id="otp"
+                    name="otp"
                     type="text"
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
                     required
-                />
-                {/* Email */}
-                <label className="block text-gray-700">Email</label>
-                <input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter 6-digit code"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isLoading ? 'Verifying...' : 'Verify Account'}
+                </button>
+              </div>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={isLoading}
+                  className="text-sm text-blue-600 hover:text-blue-500"
+                >
+                  Didn't receive code? Resend
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold text-center text-gray-900">Create Account</h2>
+            {alert && <AlertMessage message={alert.message} type={alert.type} />}
+            <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+              <div className="rounded-md shadow-sm space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
-                    required
-                />
-                {/* Password */}
-                <label className="block text-gray-700">Password</label>
-                <input
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
                     type="password"
+                    autoComplete="new-password"
+                    required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
-                    required
-                />
-                {/* Confirm Password */}
-                <label className="block text-gray-700">Confirm Password</label>
-                <input
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="At least 8 characters"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type="password"
+                    required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Confirm your password"
-                    className="w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-blue-500 focus:outline-none mb-4"
-                    required
-                />
-                {/* Submit Button */}
-                <button 
-                    type="submit" 
-                    className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 my-4 w-full"
-                >
-                    Signup
-                </button>
-                {/* Already have an account? Signin Link */}
-                <div className="mt-4 flex text-sm text-gray-600">
-                    <p className="text-black">Already have an account?</p>
-                    <a href="/" className="text-blue-500 hover:underline">Login</a>
+                  />
                 </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isLoading ? 'Signing up...' : 'Sign Up'}
+                </button>
+              </div>
             </form>
-            )}       
-        </div>
-    );
+            <div className="text-center text-sm">
+              <p className="text-gray-600">
+                Already have an account?{' '}
+                <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                  Log in
+                </a>
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
