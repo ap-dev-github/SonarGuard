@@ -36,9 +36,9 @@ export default function Signup() {
 
     //check User Verfication function
     AWS.config.update({
-        accessKeyId: process.env.NEXT_APP_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.NEXT_APP_AWS_SECRET_ACCESS_KEY,
-        region: process.env.NEXT_APP_AWS_REGION,
+        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+        region: process.env.NEXT_PUBLIC_AWS_REGION,
       });
     const congnito = new AWS.CognitoIdentityServiceProvider({ region:process.env.NEXT_APP_AWS_REGION});
     async function checkUserEmailVerification(username: string, userPoolId: string) {

@@ -4,8 +4,8 @@ import {importJWK, jwtVerify} from "jose";
 
 
 //MongoDB Connection String 
-const MONGO_URI = process.env.MONGO_URI??"";
-const DB_NAME = process.env.DB_NAME??"";
+const MONGO_URI = process.env.NEXT_PUBLIC_MONGO_URI??"";
+const DB_NAME = process.env.NEXT_PUBLIC_DB_NAME??"";
 const COGNITO_ISSUER = process.env.NEXT_PUBLIC_COGNITO_ISSUER??"";
 
 //Function to connect to the mongoDB

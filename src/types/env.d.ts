@@ -4,16 +4,16 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       // AWS
-      AWS_ACCESS_KEY_ID: string;
-      AWS_SECRET_ACCESS_KEY: string;
+      NEXT_PUBLIC_AWS_ACCESS_KEY_ID: string;
+      NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY: string;
       NEXT_PUBLIC_COGNITO_USER_POOL_ID: string;
       NEXT_PUBLIC_COGNITO_CLIENT_ID: string;
       NEXT_PUBLIC_AWS_REGION: string;
       NEXT_PUBLIC_COGNITO_ISSUER:string;
       
       // Database
-      MONGO_URI: string;
-      DB_NAME: string;
+      NEXT_PUBLIC_MONGO_URI: string;
+      NEXT_PUBLIC_DB_NAME: string;
       
       // Firebase
       NEXT_PUBLIC_FIREBASE_API_KEY: string;

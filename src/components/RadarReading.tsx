@@ -6,6 +6,8 @@ import { stringify } from "querystring";
 import MovementAlert from "./DetectMovement";
 import { useMovementDetection } from "@/hooks/useMovementDetection";
 
+
+
 const RadarReading = () => {
     const [checkMovement, setCheckMovement] = useState(false);
     const {distance} = useMovementDetection(15000);
