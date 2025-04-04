@@ -6,7 +6,14 @@ const Members = () => {
     const [email, setEmail] = useState(""); 
     const [alert, setAlert] = useState<{ message: string; type: "success" | "error"}|null>(null); 
     const { members, setMembers } = useMembers();
-    const token = localStorage.getItem("token");
+    
+
+//Refreshes at page refresh and mount 
+useEffect(() => {
+  const token = localStorage.getItem("token");
+    if(token)
+ getMembers();
+},[]);
 
     
     const showAlert = (message:string,type:"success"|"error") => {
@@ -95,11 +102,6 @@ const deleteMember = async(delEmail:string) => {
   }
 
 
-//Refreshes at page refresh and mount 
-useEffect(() => {
-    if(token)
- getMembers();
-},[token]);
    
     return (
 <div className=" flex flex-col justify-center items-center shadow-2xl rounded-3xl padding p-4 border-2 border-blue-200">

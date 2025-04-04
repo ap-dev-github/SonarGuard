@@ -12,7 +12,7 @@ export default function Dashboard() {
     const router = useRouter();
   const [auth, setAuth] = useState(false);
   const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
+  const token = localStorage.getItem("token");
   // Show alert
   const showAlert = (message: string, type: "success" | "error") => {
     setAlert({ message, type });
@@ -24,7 +24,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    
    
     if (token) {
       try {
